@@ -92,13 +92,13 @@ def load_characters():
     if CHAR_FILE.exists():
         return json.loads(CHAR_FILE.read_text(encoding="utf-8"))
     return {
-        "char1_name": "سعود",
-        "char1_desc": "A cheerful 3D Pixar-style cartoon young Arab man in his 20s, wearing a neat white thobe and red-and-white shemagh, expressive big eyes, friendly smile, clean 3D animation render",
+        "char1_name": "خسة",
+        "char1_desc": "A funny 3D Pixar-style cartoon Egyptian young man in his 20s, wearing a trendy casual hoodie and jeans, expressive big eyes, witty cheerful smile, clean 3D animation render",
         "char1_voice": "Adam",
         "char1_url": "",
-        "char2_name": "ماجد",
-        "char2_desc": "A funny energetic 3D Pixar-style cartoon young Arab man in his 20s, wearing a bright blue casual hoodie and round glasses, spiky black hair, expressive cartoon face, clean 3D animation render",
-        "char2_voice": "Charlie",
+        "char2_name": "لفتة",
+        "char2_desc": "A charming funny 3D Pixar-style cartoon Syrian young woman in her 20s, wearing a stylish modern casual jacket and jeans, expressive bright eyes, friendly witty smile, clean 3D animation render",
+        "char2_voice": "Rachel",
         "char2_url": "",
     }
 
@@ -117,7 +117,7 @@ with st.sidebar:
     if check_ffmpeg():
         st.success("✅ FFmpeg جاهز للمونتاج")
     else:
-        st.error("⚠️ FFmpeg غير مثبت (تأكد من ملف packages.txt)")
+        st.error("⚠️ FFmpeg غير مثبت")
 
 st.title("🎬 استوديو يوميات الكرتون الخاص")
 st.caption("أفكار + اسكربت بلهجات متعددة + ثبات الشخصيات + أصوات + Lip-Sync + تجهيز النشر")
@@ -178,23 +178,28 @@ with tab1:
 
 with tab2:
     st.subheader("كتابة الحلقة وتجهيزها للانتشار")
-    c1, c2, c3 = st.columns(3)
+    dialects = [
+        "العربية - اللهجة المصرية الكوميدية",
+        "العربية - اللهجة السورية / الشامية",
+        "العربية - اللهجة السعودية البيضاء",
+        "العربية - اللهجة الخليجية",
+        "العربية الفصحى المبسطة",
+        "English (American Casual)",
+        "Français",
+        "Español",
+    ]
+    c1, c2 = st.columns(2)
     with c1:
-        dialect = st.selectbox("اللغة / اللهجة", [
-            "العربية - اللهجة السعودية البيضاء",
-            "العربية - اللهجة المصرية الكوميدية",
-            "العربية - اللهجة الخليجية",
-            "العربية - اللهجة الشامية",
-            "العربية الفصحى المبسطة",
-            "English (American Casual)",
-            "Français",
-            "Español",
-        ])
+        dialect1 = st.selectbox(f"لهجة {st.session_state['chars']['char1_name']}", dialects, index=0)
     with c2:
-        num_scenes = st.slider("عدد المشاهد", 2, 8, 4)
+        dialect2 = st.selectbox(f"لهجة {st.session_state['chars']['char2_name']}", dialects, index=1)
+    c3, c4 = st.columns(2)
     with c3:
+        num_scenes = st.slider("عدد المشاهد", 2, 8, 4)
+    with c4:
         tone = st.selectbox("الأسلوب", ["كوميدي يومي سريع", "موقف محرج ومضحك", "نقاش طريف", "نصيحة ساخرة"])
     idea = st.text_area("فكرة الحلقة (اختياري — اتركه فارغاً ليبتكر الذكاء الاصطناعي فكرة)")
+
     if st.button("✨ توليد الاسكربت والعناوين", type="primary"):
         if not gemini_key:
             st.error("أدخل Gemini API Key أولاً.")
@@ -205,26 +210,39 @@ with tab2:
                     chars = st.session_state["chars"]
                     prompt = f"""
 أنت مخرج محتوى فيروسي لمقاطع الكرتون القصيرة (Reels / Shorts / TikTok).
-الشخصيتان:
-- char1: {chars['char1_name']} ({chars['char1_desc']})
-- char2: {chars['char2_name']} ({chars['char2_desc']})
+الشخصيتان صديقان مقربان:
+- char1: {chars['char1_name']} — يتحدث دائماً بـ: {dialect1} | وصفه: {chars['char1_desc']}
+- char2: {chars['char2_name']} — يتحدث دائماً بـ: {dialect2} | وصفه: {chars['char2_desc']}
+
 المطلوب: حلقة من {num_scenes} مشاهد متسلسلة.
-اللهجة/اللغة: {dialect} | الأسلوب: {tone}
-الفكرة: {idea if idea.strip() else "ابتكر فكرة يومية طريفة ومضحكة."}
+الأسلوب: {tone}
+الفكرة: {idea if idea.strip() else "ابتكر فكرة يومية طريفة ومضحكة بين الصديقين."}
+
 القواعد:
-1. جمل قصيرة طبيعية ومضبوطة بالشكل لتسهيل النطق.
-2. image_prompt بالإنجليزية لمشهد 9:16 يذكر Image 1 و/أو Image 2 بنفس التصميم والملابس مع وضوح الوجه للكاميرا.
-3. motion_prompt بالإنجليزية لوصف حركة المتحدث وتعبيراته.
-4. 5 عناوين فيروسية، وصف منشور تفاعلي، و10 هاشتاغات.
+1. التزم بدقة أن يتحدث char1 بلهجته ({dialect1}) وchar2 بلهجته ({dialect2}) في جمل قصيرة طبيعية مضبوطة بالشكل لتسهيل النطق.
+2. في image_prompt: اكتب بالإنجليزية وصف مشهد 9:16 يذكر Image 1 و/أو Image 2 بنفس التصميم والملابس مع وضوح الوجه للكاميرا.
+3. في motion_prompt: اكتب بالإنجليزية وصف حركة المتحدث وتعبيرات وجهه.
+4. اكتب 5 عناوين فيروسية، وصف منشور تفاعلي، و10 هاشتاغات.
 """
-                    resp = client.models.generate_content(
-                        model="gemini-3.8-flash",
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            response_mime_type="application/json",
-                            response_schema=EpisodePlan,
-                        ),
-                    )
+                    resp = None
+                    last_err = None
+                    for m_name in ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"]:
+                        try:
+                            resp = client.models.generate_content(
+                                model=m_name,
+                                contents=prompt,
+                                config=types.GenerateContentConfig(
+                                    response_mime_type="application/json",
+                                    response_schema=EpisodePlan,
+                                ),
+                            )
+                            break
+                        except Exception as err:
+                            last_err = err
+                            time.sleep(1)
+                    if resp is None:
+                        raise last_err
+
                     plan = EpisodePlan.model_validate_json(resp.text)
                     st.session_state["episode"] = plan.model_dump()
                     st.session_state["scene_assets"] = {}
