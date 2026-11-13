@@ -1,5 +1,5 @@
 streamlit>=1.38.0
 google-genai>=2.25.0,<3.0.0
-fal-client>=0.5.0
+edge-tts>=6.1.0
 pydantic>=2.7.0
 requests>=2.31.0
